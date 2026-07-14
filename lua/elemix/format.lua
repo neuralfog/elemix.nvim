@@ -1,5 +1,6 @@
 local config = require("elemix.config")
 local resolve = require("elemix.resolve")
+local state = require("elemix.state")
 
 local uv = vim.uv or vim.loop
 local M = {}
@@ -17,8 +18,9 @@ local NAME = "elemix-formatter"
 -- event context, where LSP dispatch / API calls are forbidden). vim.system also
 -- throws synchronously when the binary is missing, so guard the spawn too.
 --
--- Width/indent are NOT passed as flags: `etf` reads them from `elemix.toml` at
--- the project root, so we just tell it where the root is with `--root`.
+-- Width/indent/enabled are NOT passed as flags: `etf` reads them from
+-- `elemix.toml` at the project root, so we just tell it where the root is with
+-- `--root`.
 local function run_etf(root, mode, input, cb)
     local bin = resolve.formatter_bin(root, config.options.formatter.path)
     local cmd = { bin, mode }
@@ -259,18 +261,21 @@ function M.format(bufnr)
     vim.lsp.buf.format({ name = NAME, bufnr = bufnr, async = false })
 end
 
--- Format-on-save: always pipe the buffer through `etf --stdin --on-save`, which
--- formats only when elemix.toml's `[formatter] format_on_save` is true and the
--- formatter is enabled - otherwise it echoes the buffer back unchanged. So the
--- on/off lives in the project config, not here. Synchronous (BufWritePre).
+-- Format-on-save: pipe the buffer through `etf --stdin` and replace it. Gated on
+-- the persisted per-project toggle (`:ElemixFormatOnSave`), the nvim analog of
+-- the VS Code `formatOnSave` workspace setting - off by default. Synchronous
+-- (BufWritePre). `etf` still declines if the formatter is disabled in elemix.toml.
 function M.on_save(bufnr)
     if vim.bo[bufnr].filetype ~= "typescript" then
         return
     end
     local root = resolve.root(bufnr)
+    if not state.format_on_save(root) then
+        return
+    end
     local bin = resolve.formatter_bin(root, config.options.formatter.path)
     local src = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
-    local cmd = { bin, "--stdin", "--on-save" }
+    local cmd = { bin, "--stdin" }
     if root then
         cmd[#cmd + 1] = "--root"
         cmd[#cmd + 1] = root
@@ -288,6 +293,20 @@ function M.on_save(bufnr)
     local view = vim.fn.winsaveview()
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(out, "\n", { plain = true }))
     vim.fn.winrestview(view)
+end
+
+-- `:ElemixFormatOnSave` - flip the persisted per-project format-on-save toggle
+-- and report the new state, so the command echoes "enabled"/"disabled".
+function M.toggle_on_save(bufnr)
+    bufnr = (bufnr == nil or bufnr == 0) and vim.api.nvim_get_current_buf()
+        or bufnr
+    local root = resolve.root(bufnr)
+    local enabled = not state.format_on_save(root)
+    state.set_format_on_save(root, enabled)
+    vim.notify(
+        "elemix: format on save " .. (enabled and "enabled" or "disabled"),
+        vim.log.levels.INFO
+    )
 end
 
 return M

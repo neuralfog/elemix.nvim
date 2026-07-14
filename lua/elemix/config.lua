@@ -11,8 +11,9 @@ M.defaults = {
         -- Path to the `etf` template formatter binary. Empty resolves the project's
         -- node_modules/.bin/etf, then `etf` on PATH.
         --
-        -- Everything else - whether the formatter runs, format-on-save, width, and
-        -- indentation - is read from `elemix.toml` at the project root, not here.
+        -- Whether the formatter runs, plus width and indentation, is read from
+        -- `elemix.toml` at the project root, not here. Format-on-save is a per-
+        -- project toggle (`:ElemixFormatOnSave`), persisted in the nvim data dir.
         path = "",
     },
     -- Native LSP completion (`vim.lsp.completion` autotrigger). Any completion

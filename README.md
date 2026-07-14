@@ -18,6 +18,7 @@
 ## Commands
 
 - `:ElemixFormat` - format elemix file.
+- `:ElemixFormatOnSave` - toggle format-on-save for current project.
 - `:ElemixRestart` - restart lsp server.
 
 ## Installation
@@ -103,5 +104,4 @@ enabled = true           # false turns the formatter off entirely
 indent_style = "space"   # "space" (default) or "tab"
 indent_width = 4         # columns per indent level
 line_width = 80          # max line width
-format_on_save = false   # format tpl templates on save
 ```

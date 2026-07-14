@@ -67,6 +67,10 @@ local function define_commands()
     vim.api.nvim_create_user_command("ElemixFormat", function()
         format.format()
     end, { desc = "elemix: format tpl templates in the current file" })
+
+    vim.api.nvim_create_user_command("ElemixFormatOnSave", function()
+        format.toggle_on_save()
+    end, { desc = "elemix: toggle format-on-save for this project" })
 end
 
 local function define_autocmds()
