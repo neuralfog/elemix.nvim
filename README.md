@@ -6,7 +6,8 @@
 
 - Syntax highlighting for `tpl` templates.
 - Prop typechecking diagnostics: prop type mismatches, missing required props, unknown props, duplicated props.
-- Completion: `:prop`, `@event`, `~model`/`~onmodel`.
+- Compiler hint validation.
+- Completion: `:prop` component context aware, `@event`, `~model`/`~onmodel`.
 - Completion: compiler hints `// #...`.
 - Completion: components tags with default props inlined.
 - Hover: compiler hints docs.
@@ -59,9 +60,9 @@ Needs Neovim 0.10+. If you already have a Neovim config, skip to [With an existi
 
 4. Install the Treesitter parsers used for highlighting:
 
-   ```vim
-   :TSInstall typescript html
-   ```
+```vim
+:TSInstall typescript html
+```
 
 Open a `.ts` file with a `tpl` template and the plugin is active.
 
